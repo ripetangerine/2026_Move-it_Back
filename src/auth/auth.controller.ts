@@ -6,6 +6,12 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  
+  // @Get
+  // async getAuth(){
+
+  // }
+  
 
 
 }
