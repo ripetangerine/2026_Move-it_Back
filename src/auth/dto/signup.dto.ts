@@ -27,4 +27,5 @@ export class SignupDto {
     @IsNotEmpty()
     @IsEmail()
     email: string;
+    id: any;
 }

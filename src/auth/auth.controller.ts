@@ -7,14 +7,18 @@ import {
   Param, 
   Delete, 
   UnauthorizedException, 
-  Res } from '@nestjs/common';
+  Res, Req,
+  UseGuards
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from "./dto/login.dto";
 import { SignupDto } from './dto/signup.dto';
+import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from 
 
-// TODO : cook;
+// TODO : @nestjs/swagger ApiTag처리
 
-@Controller('auth')
+@Controller('api/v1/auth')
 export class AuthController{
   constructor(private readonly authService: AuthService) {}
   
@@ -51,6 +55,17 @@ export class AuthController{
         statusCode: error.status || 500,
       });
     }
+  }
+
+  @Post('logout')
+  async logout(){
+    // TODO: 로그아웃 관련 로직
+  }
+
+  @UseGuards(AuthGuard('jwt-refresh'))
+  @Post('refresh')
+  async refresh(@Req() req){
+    return this.authService.refresh(req.user);
   }
 
 }

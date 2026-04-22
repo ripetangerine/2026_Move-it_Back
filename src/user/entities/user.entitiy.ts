@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryColumn } from "node_modules/typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "node_modules/typeorm";
 
 @Entity()
 export class User {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column()

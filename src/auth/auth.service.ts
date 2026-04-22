@@ -3,13 +3,16 @@ import { UserService } from '@/user/user.service';
 import * as bcrypt from "bcrypt";
 import { JwtService } from 'node_modules/@nestjs/jwt';
 import { ConfigService } from 'node_modules/@nestjs/config';
+import { SignupDto } from './dto/signup.dto';
+import { UserRepository } from '@/user/user.repository';
 
 @Injectable()
 export class AuthService {
     constructor(
         private userService: UserService,
         private jwtService: JwtService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private userRepository: UserRepository, 
     ){};
 
     async validateUser(username:string, password:string){
@@ -48,7 +51,16 @@ export class AuthService {
         return { token: newToken };
     }
 
-    async signIn(username:string, pass:string): Promise<any>{ //TODO: 리턴 형변환
-        const user = UserService.findOne(username);
+    async signup(dto: SignupDto): Promise<void> {
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
+        const user = this.userRepository.create({
+            ...dto,
+            password: hashedPassword,
+        });
+        await this.userRepository.save(user);
+    }
+
+    async logout(user: any){
+        this.jwtService.
     }
 }
