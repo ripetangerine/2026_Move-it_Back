@@ -1,13 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "node_modules/typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({length: 50})
     username: string;
 
-    @Column()
+    @Column({select: false})
     password: string;
 }
