@@ -10,18 +10,20 @@ export class UserRepository{
         private readonly userRepository: Repository<User>
     ){}
 
+    // TODO : null 반환 안정화
+
     async findById(id: User['id']): Promise<User|null> {
-        const entity = await this.userRepository.findOne({
+        const user = await this.userRepository.findOne({
             where: { id: Number(id) },
         });
-        return entity;
+        return user??null;
     }
 
     async findByName(username: string): Promise<User|null>{
         if(!username) return null;
         return await this.userRepository.findOne({
             where: { username: username }
-        });
+        }) ?? null;
     }
 
 }
