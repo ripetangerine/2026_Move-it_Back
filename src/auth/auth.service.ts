@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '@/user/user.service';
 import * as bcrypt from "bcrypt";
 import { JwtService } from 'node_modules/@nestjs/jwt';
 import { ConfigService } from 'node_modules/@nestjs/config';
-import { SignupDto } from './dto/signup.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UserRepository } from '@/user/user.repository';
 
 @Injectable()
@@ -12,17 +12,17 @@ export class AuthService {
         private userService: UserService,
         private jwtService: JwtService,
         private configService: ConfigService,
-        private userRepository: UserRepository, 
     ){};
 
-    async validateUser(username:string, password:string){
-        const user = await this.userService.findOne(username);
+    async validateUser(username:string, password:string){ // TODO : 매개변수 형 변환 확인
+        const user = await this.userService.findByName(username);
         if (user && await bcrypt.compare(password, user.password)) {
             const { password, ...result } = user;
+            console.log(user);
             return result;
+        } else {
+            throw new UnauthorizedException({error: "Incorrect username | password"});
         }
-        console.log(user);
-
     }
 
     async login(user: any) {
@@ -43,24 +43,28 @@ export class AuthService {
     }
 
     async refresh(user: any){
+        const currentUser = await this.userService.findOne(user.id);
+        if(currentUser===null || !currentUser?.refreshToken) throw new UnauthorizedException("이미 로그아웃된 사용자");
+
         const payload = { username: user.username, sub: user.id };
         const newToken = this.jwtService.sign(payload, {
             secret: this.configService.get('JWT_ACCESS_SECRET'),
             expiresIn: '15m'
         });
-        return { token: newToken };
+        const newRefreshToken = this.jwtService.sign(payload, {
+            secret: this.configService.get('JWT_REFRESH_SECRET'),
+            expiresIn: '7d'
+        });
+        await this.userService.updateRefreshToken(user.id, newRefreshToken);
+        return { token: newToken, refreshToken: newRefreshToken };
     }
 
-    async signup(dto: SignupDto): Promise<void> {
-        const hashedPassword = await bcrypt.hash(dto.password, 10);
-        const user = this.userRepository.create({
-            ...dto,
-            password: hashedPassword,
-        });
-        await this.userRepository.save(user);
+    async signup(dto: CreateUserDto): Promise<void> {
+        const user = this.userService.create(dto);
     }
 
     async logout(user: any){
-        this.jwtService.
+        await this.userService.updateRefreshToken(user.id, null);
+        return {message: "로그아웃 성공"}
     }
 }

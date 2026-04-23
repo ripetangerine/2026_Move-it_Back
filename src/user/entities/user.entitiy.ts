@@ -10,4 +10,7 @@ export class User {
 
     @Column({select: false})
     password: string;
+
+    @Column({})
+    refreshToken: string; //로그인시 업뎃|아웃시 삭제
 }
